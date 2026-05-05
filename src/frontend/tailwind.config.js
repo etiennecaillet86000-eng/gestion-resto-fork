@@ -76,7 +76,7 @@ export default {
         },
       },
       fontFamily: {
-        sans: ["Plus Jakarta Sans", "system-ui", "sans-serif"],
+        sans: ["General Sans", "system-ui", "sans-serif"],
         display: ["Fraunces", "Georgia", "serif"],
       },
       borderRadius: {

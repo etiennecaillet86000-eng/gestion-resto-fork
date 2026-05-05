@@ -1,6 +1,3 @@
-import Array "mo:base/Array";
-import Nat "mo:base/Nat";
-import Float "mo:base/Float";
 
 actor {
 
@@ -106,10 +103,10 @@ actor {
     dureeMois: Nat;
   };
 
-  // --- Stable variables ---
-  stable var ingredients: [Ingredient] = [];
-  stable var recettes: [Recette] = [];
-  stable var fraisFixes: [LigneFraisFixes] = [
+  // --- State variables ---
+  var ingredients: [Ingredient] = [];
+  var recettes: [Recette] = [];
+  var fraisFixes: [LigneFraisFixes] = [
     { nom = "Location / amenagement"; montantMensuelAvecRemu = 0.0; montantMensuelHorsRemu = 0.0 },
     { nom = "Equipements Cuisine / bar (Amortissement)"; montantMensuelAvecRemu = 0.0; montantMensuelHorsRemu = 0.0 },
     { nom = "Licences / Assurances"; montantMensuelAvecRemu = 0.0; montantMensuelHorsRemu = 0.0 },
@@ -120,7 +117,7 @@ actor {
     { nom = "Emprunt"; montantMensuelAvecRemu = 0.0; montantMensuelHorsRemu = 0.0 },
     { nom = "Stock boissons / nourritures"; montantMensuelAvecRemu = 0.0; montantMensuelHorsRemu = 0.0 },
   ];
-  stable var parametres: ParametresRentabilite = {
+  var parametres: ParametresRentabilite = {
     ticketMoyenHT = 0.0;
     nbClientsParSemaine = 0.0;
     nbSemainesSaison = 24.0;
@@ -133,8 +130,8 @@ actor {
       ("Les formules ou menus", 31.0),
     ];
   };
-  stable var joursOuvertureParSemaineSV: Float = 6.0;
-  stable var mixProduitParCategorieSV: [(Text, Float)] = [
+  var joursOuvertureParSemaineSV: Float = 6.0;
+  var mixProduitParCategorieSV: [(Text, Float)] = [
     ("Boissons froides (hors alcool)", 0.0),
     ("Sandwichs froids et Wraps", 0.0),
     ("Plats chauds", 0.0),
@@ -143,22 +140,22 @@ actor {
     ("Les formules ou menus", 0.0),
   ];
   // Legacy stable var retained for upgrade compatibility (always empty after migration)
-  stable var mouvementsStock: [MouvementStockLegacy] = [];
-  stable var mouvementsStockV2: [MouvementStock] = [];
-  stable var ventesRecettes: [VenteRecette] = [];
-  stable var emprunts: [Emprunt] = [];
-  stable var associesGerants: [AssocieGerant] = [];
-  stable var salaries: [Salarie] = [];
-  stable var parametresJuridiques: ParametresJuridiques = {
+  var mouvementsStock: [MouvementStockLegacy] = [];
+  var mouvementsStockV2: [MouvementStock] = [];
+  var ventesRecettes: [VenteRecette] = [];
+  var emprunts: [Emprunt] = [];
+  var associesGerants: [AssocieGerant] = [];
+  var salaries: [Salarie] = [];
+  var parametresJuridiques: ParametresJuridiques = {
     formeJuridique = "EI";
     regimeFiscal = "IR";
     regimeSocial = "TNS";
   };
-  stable var amortissements: [LigneAmortissement] = [];
-  stable var nextId: Nat = 1;
+  var amortissements: [LigneAmortissement] = [];
+  var nextId: Nat = 1;
 
   func genId() : Text {
-    let id = Nat.toText(nextId);
+    let id = nextId.toText();
     nextId += 1;
     id
   };
@@ -169,13 +166,13 @@ actor {
 
   public func createIngredient(nom: Text, unite: Text, prixUnitaireHT: Float, seuilSecurite: Float, stockInitial: Float) : async Ingredient {
     let ing: Ingredient = { id = genId(); nom; unite; prixUnitaireHT; seuilSecurite; stockInitial };
-    ingredients := Array.append(ingredients, [ing]);
+    ingredients := ingredients.concat([ing]);
     ing
   };
 
   public func updateIngredient(id: Text, nom: Text, unite: Text, prixUnitaireHT: Float, seuilSecurite: Float, stockInitial: Float) : async Bool {
     var found = false;
-    ingredients := Array.map<Ingredient, Ingredient>(ingredients, func(i) {
+    ingredients := ingredients.map(func(i) {
       if (i.id == id) { found := true; { id; nom; unite; prixUnitaireHT; seuilSecurite; stockInitial } }
       else { i }
     });
@@ -184,7 +181,7 @@ actor {
 
   public func deleteIngredient(id: Text) : async Bool {
     let before = ingredients.size();
-    ingredients := Array.filter<Ingredient>(ingredients, func(i) { i.id != id });
+    ingredients := ingredients.filter(func i = i.id != id);
     ingredients.size() < before
   };
 
@@ -194,13 +191,13 @@ actor {
 
   public func createRecette(nom: Text, categorie: Text, categorieTVA: Text, tauxTVA: Float, ings: [RecetteIngredient], consommablesHT: Float, prixVenteTTC: Float) : async Recette {
     let r: Recette = { id = genId(); nom; categorie; categorieTVA; tauxTVA; ingredients = ings; consommablesHT; prixVenteTTC };
-    recettes := Array.append(recettes, [r]);
+    recettes := recettes.concat([r]);
     r
   };
 
   public func updateRecette(id: Text, nom: Text, categorie: Text, categorieTVA: Text, tauxTVA: Float, ings: [RecetteIngredient], consommablesHT: Float, prixVenteTTC: Float) : async Bool {
     var found = false;
-    recettes := Array.map<Recette, Recette>(recettes, func(r) {
+    recettes := recettes.map(func(r) {
       if (r.id == id) { found := true; { id; nom; categorie; categorieTVA; tauxTVA; ingredients = ings; consommablesHT; prixVenteTTC } }
       else { r }
     });
@@ -209,7 +206,7 @@ actor {
 
   public func deleteRecette(id: Text) : async Bool {
     let before = recettes.size();
-    recettes := Array.filter<Recette>(recettes, func(r) { r.id != id });
+    recettes := recettes.filter(func r = r.id != id);
     recettes.size() < before
   };
 
@@ -255,13 +252,13 @@ actor {
 
   public func createMouvement(ingredientId: Text, date: Text, typeOp: Text, quantite: Float, motif: Text) : async MouvementStock {
     let m: MouvementStock = { id = genId(); ingredientId; date; typeOp; quantite; motif };
-    mouvementsStockV2 := Array.append(mouvementsStockV2, [m]);
+    mouvementsStockV2 := mouvementsStockV2.concat([m]);
     m
   };
 
   public func deleteMouvement(id: Text) : async Bool {
     let before = mouvementsStockV2.size();
-    mouvementsStockV2 := Array.filter<MouvementStock>(mouvementsStockV2, func(m) { m.id != id });
+    mouvementsStockV2 := mouvementsStockV2.filter(func m = m.id != id);
     mouvementsStockV2.size() < before
   };
 
@@ -271,13 +268,13 @@ actor {
 
   public func createVente(recetteId: Text, date: Text, quantite: Float) : async VenteRecette {
     let v: VenteRecette = { id = genId(); recetteId; date; quantite };
-    ventesRecettes := Array.append(ventesRecettes, [v]);
+    ventesRecettes := ventesRecettes.concat([v]);
     v
   };
 
   public func deleteVente(id: Text) : async Bool {
     let before = ventesRecettes.size();
-    ventesRecettes := Array.filter<VenteRecette>(ventesRecettes, func(v) { v.id != id });
+    ventesRecettes := ventesRecettes.filter(func v = v.id != id);
     ventesRecettes.size() < before
   };
 
@@ -287,13 +284,13 @@ actor {
 
   public func createEmprunt(nom: Text, montant: Float, tauxAnnuel: Float, dureeMois: Nat, dateDebut: Text, differeMois: Nat) : async Emprunt {
     let e: Emprunt = { id = genId(); nom; montant; tauxAnnuel; dureeMois; dateDebut; differeMois };
-    emprunts := Array.append(emprunts, [e]);
+    emprunts := emprunts.concat([e]);
     e
   };
 
   public func updateEmprunt(id: Text, nom: Text, montant: Float, tauxAnnuel: Float, dureeMois: Nat, dateDebut: Text, differeMois: Nat) : async Bool {
     var found = false;
-    emprunts := Array.map<Emprunt, Emprunt>(emprunts, func(e) {
+    emprunts := emprunts.map(func(e) {
       if (e.id == id) { found := true; { id; nom; montant; tauxAnnuel; dureeMois; dateDebut; differeMois } }
       else { e }
     });
@@ -302,7 +299,7 @@ actor {
 
   public func deleteEmprunt(id: Text) : async Bool {
     let before = emprunts.size();
-    emprunts := Array.filter<Emprunt>(emprunts, func(e) { e.id != id });
+    emprunts := emprunts.filter(func e = e.id != id);
     emprunts.size() < before
   };
 
@@ -312,13 +309,13 @@ actor {
 
   public func createAssocieGerant(nom: Text, statut: Text, remunerationAnnuelle: Float) : async AssocieGerant {
     let a: AssocieGerant = { id = genId(); nom; statut; remunerationAnnuelle };
-    associesGerants := Array.append(associesGerants, [a]);
+    associesGerants := associesGerants.concat([a]);
     a
   };
 
   public func updateAssocieGerant(id: Text, nom: Text, statut: Text, remunerationAnnuelle: Float) : async Bool {
     var found = false;
-    associesGerants := Array.map<AssocieGerant, AssocieGerant>(associesGerants, func(a) {
+    associesGerants := associesGerants.map(func(a) {
       if (a.id == id) { found := true; { id; nom; statut; remunerationAnnuelle } }
       else { a }
     });
@@ -327,7 +324,7 @@ actor {
 
   public func deleteAssocieGerant(id: Text) : async Bool {
     let before = associesGerants.size();
-    associesGerants := Array.filter<AssocieGerant>(associesGerants, func(a) { a.id != id });
+    associesGerants := associesGerants.filter(func a = a.id != id);
     associesGerants.size() < before
   };
 
@@ -337,13 +334,13 @@ actor {
 
   public func createSalarie(nom: Text, poste: Text, salaireAnnuelBrut: Float) : async Salarie {
     let s: Salarie = { id = genId(); nom; poste; salaireAnnuelBrut };
-    salaries := Array.append(salaries, [s]);
+    salaries := salaries.concat([s]);
     s
   };
 
   public func updateSalarie(id: Text, nom: Text, poste: Text, salaireAnnuelBrut: Float) : async Bool {
     var found = false;
-    salaries := Array.map<Salarie, Salarie>(salaries, func(s) {
+    salaries := salaries.map(func(s) {
       if (s.id == id) { found := true; { id; nom; poste; salaireAnnuelBrut } }
       else { s }
     });
@@ -352,7 +349,7 @@ actor {
 
   public func deleteSalarie(id: Text) : async Bool {
     let before = salaries.size();
-    salaries := Array.filter<Salarie>(salaries, func(s) { s.id != id });
+    salaries := salaries.filter(func s = s.id != id);
     salaries.size() < before
   };
 
@@ -371,13 +368,13 @@ actor {
 
   public func createAmortissement(nom: Text, coutTotal: Float, dureeMois: Nat) : async LigneAmortissement {
     let a: LigneAmortissement = { id = genId(); nom; coutTotal; dureeMois };
-    amortissements := Array.append(amortissements, [a]);
+    amortissements := amortissements.concat([a]);
     a
   };
 
   public func updateAmortissement(id: Text, nom: Text, coutTotal: Float, dureeMois: Nat) : async Bool {
     var found = false;
-    amortissements := Array.map<LigneAmortissement, LigneAmortissement>(amortissements, func(a) {
+    amortissements := amortissements.map(func(a) {
       if (a.id == id) { found := true; { id; nom; coutTotal; dureeMois } }
       else { a }
     });
@@ -386,7 +383,7 @@ actor {
 
   public func deleteAmortissement(id: Text) : async Bool {
     let before = amortissements.size();
-    amortissements := Array.filter<LigneAmortissement>(amortissements, func(a) { a.id != id });
+    amortissements := amortissements.filter(func a = a.id != id);
     amortissements.size() < before
   };
 

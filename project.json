@@ -1,0 +1,24 @@
+{
+  "overview": "A full-stack restaurant ERP on the Internet Computer — managing ingredients, recipes, staff, loans, stock, daily sales, fixed costs, and profitability with a modular sidebar-based interface and real-time data sync via React Query.",
+  "features": [
+    "Ingredient & recipe management with cost calculations",
+    "Stock movements and inventory tracking",
+    "Employee & associate management (salaries, cotisations)",
+    "Loan management with amortization schedules",
+    "Daily sales tracking and profitability analytics",
+    "Fixed costs and business plan modules",
+    "Sidebar navigation organized by module (Restaurant, RH, Finance)",
+    "Full ICP backend with React Query sync"
+  ],
+  "category": "business-erp",
+  "tags": [
+    "restaurant",
+    "erp",
+    "react-query",
+    "icp",
+    "management",
+    "french",
+    "saas"
+  ],
+  "last_updated": "2026-05-05T14:16:27.826Z"
+}

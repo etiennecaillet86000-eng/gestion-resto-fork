@@ -1,4 +1,6 @@
+import { useActor } from "@caffeineai/core-infrastructure";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { createActor } from "../backend";
 import type {
   AssocieGerant,
   Emprunt,
@@ -14,7 +16,6 @@ import type {
   VenteRecette,
   backendInterface,
 } from "../backend.d";
-import { useActor } from "./useActor";
 
 export type {
   Ingredient,
@@ -46,7 +47,7 @@ function requireActor(actor: unknown): backendInterface {
 }
 
 export function useIngredients() {
-  const { actor, isFetching } = useActor();
+  const { actor, isFetching } = useActor(createActor);
   return useQuery<Ingredient[]>({
     queryKey: ["ingredients"],
     queryFn: async () => {
@@ -64,7 +65,7 @@ export function useIngredients() {
 }
 
 export function useCreateIngredient() {
-  const { actor } = useActor();
+  const { actor } = useActor(createActor);
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (v: Omit<Ingredient, "id">) => {
@@ -83,7 +84,7 @@ export function useCreateIngredient() {
 }
 
 export function useUpdateIngredient() {
-  const { actor } = useActor();
+  const { actor } = useActor(createActor);
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (v: Ingredient) => {
@@ -103,7 +104,7 @@ export function useUpdateIngredient() {
 }
 
 export function useDeleteIngredient() {
-  const { actor } = useActor();
+  const { actor } = useActor(createActor);
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (id: string) => {
@@ -116,7 +117,7 @@ export function useDeleteIngredient() {
 }
 
 export function useRecettes() {
-  const { actor, isFetching } = useActor();
+  const { actor, isFetching } = useActor(createActor);
   return useQuery<Recette[]>({
     queryKey: ["recettes"],
     queryFn: async () => {
@@ -134,7 +135,7 @@ export function useRecettes() {
 }
 
 export function useCreateRecette() {
-  const { actor } = useActor();
+  const { actor } = useActor(createActor);
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (v: Omit<Recette, "id">) => {
@@ -155,7 +156,7 @@ export function useCreateRecette() {
 }
 
 export function useUpdateRecette() {
-  const { actor } = useActor();
+  const { actor } = useActor(createActor);
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (v: Recette) => {
@@ -177,7 +178,7 @@ export function useUpdateRecette() {
 }
 
 export function useDeleteRecette() {
-  const { actor } = useActor();
+  const { actor } = useActor(createActor);
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (id: string) => {
@@ -190,7 +191,7 @@ export function useDeleteRecette() {
 }
 
 export function useFraisFixes() {
-  const { actor, isFetching } = useActor();
+  const { actor, isFetching } = useActor(createActor);
   return useQuery<LigneFraisFixes[]>({
     queryKey: ["fraisFixes"],
     queryFn: async () => {
@@ -208,7 +209,7 @@ export function useFraisFixes() {
 }
 
 export function useSaveFraisFixes() {
-  const { actor } = useActor();
+  const { actor } = useActor(createActor);
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (lignes: LigneFraisFixes[]) => {
@@ -221,7 +222,7 @@ export function useSaveFraisFixes() {
 }
 
 export function useParametres() {
-  const { actor, isFetching } = useActor();
+  const { actor, isFetching } = useActor(createActor);
   return useQuery<ParametresRentabilite>({
     queryKey: ["parametres"],
     queryFn: async () => {
@@ -242,7 +243,7 @@ export function useParametres() {
 }
 
 export function useSaveParametres() {
-  const { actor } = useActor();
+  const { actor } = useActor(createActor);
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (p: ParametresRentabilite) => {
@@ -255,7 +256,7 @@ export function useSaveParametres() {
 }
 
 export function useMouvementsStock() {
-  const { actor, isFetching } = useActor();
+  const { actor, isFetching } = useActor(createActor);
   return useQuery<MouvementStock[]>({
     queryKey: ["mouvements"],
     queryFn: async () => {
@@ -273,7 +274,7 @@ export function useMouvementsStock() {
 }
 
 export function useCreateMouvement() {
-  const { actor } = useActor();
+  const { actor } = useActor(createActor);
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (v: {
@@ -298,7 +299,7 @@ export function useCreateMouvement() {
 }
 
 export function useDeleteMouvement() {
-  const { actor } = useActor();
+  const { actor } = useActor(createActor);
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (id: string) => {
@@ -311,7 +312,7 @@ export function useDeleteMouvement() {
 }
 
 export function useVentesRecettes() {
-  const { actor, isFetching } = useActor();
+  const { actor, isFetching } = useActor(createActor);
   return useQuery<VenteRecette[]>({
     queryKey: ["ventes"],
     queryFn: async () => {
@@ -329,7 +330,7 @@ export function useVentesRecettes() {
 }
 
 export function useCreateVente() {
-  const { actor } = useActor();
+  const { actor } = useActor(createActor);
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (v: { recetteId: string; date: string; quantite: number }) => {
@@ -342,7 +343,7 @@ export function useCreateVente() {
 }
 
 export function useDeleteVente() {
-  const { actor } = useActor();
+  const { actor } = useActor(createActor);
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (id: string) => {
@@ -357,7 +358,7 @@ export function useDeleteVente() {
 // ── EMPRUNTS ─────────────────────────────────────────────────────────────────────────────
 
 export function useEmprunts() {
-  const { actor, isFetching } = useActor();
+  const { actor, isFetching } = useActor(createActor);
   return useQuery<Emprunt[]>({
     queryKey: ["emprunts"],
     queryFn: async () => {
@@ -375,7 +376,7 @@ export function useEmprunts() {
 }
 
 export function useCreateEmprunt() {
-  const { actor } = useActor();
+  const { actor } = useActor(createActor);
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (v: Omit<Emprunt, "id">) => {
@@ -395,7 +396,7 @@ export function useCreateEmprunt() {
 }
 
 export function useUpdateEmprunt() {
-  const { actor } = useActor();
+  const { actor } = useActor(createActor);
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (v: Emprunt) => {
@@ -416,7 +417,7 @@ export function useUpdateEmprunt() {
 }
 
 export function useDeleteEmprunt() {
-  const { actor } = useActor();
+  const { actor } = useActor(createActor);
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (id: string) => {
@@ -431,7 +432,7 @@ export function useDeleteEmprunt() {
 // ── ASSOCIES / GERANTS ───────────────────────────────────────────────────────────────────
 
 export function useAssociesGerants() {
-  const { actor, isFetching } = useActor();
+  const { actor, isFetching } = useActor(createActor);
   return useQuery<AssocieGerant[]>({
     queryKey: ["associes"],
     queryFn: async () => {
@@ -449,7 +450,7 @@ export function useAssociesGerants() {
 }
 
 export function useCreateAssocieGerant() {
-  const { actor } = useActor();
+  const { actor } = useActor(createActor);
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (v: Omit<AssocieGerant, "id">) => {
@@ -466,7 +467,7 @@ export function useCreateAssocieGerant() {
 }
 
 export function useUpdateAssocieGerant() {
-  const { actor } = useActor();
+  const { actor } = useActor(createActor);
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (v: AssocieGerant) => {
@@ -484,7 +485,7 @@ export function useUpdateAssocieGerant() {
 }
 
 export function useDeleteAssocieGerant() {
-  const { actor } = useActor();
+  const { actor } = useActor(createActor);
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (id: string) => {
@@ -499,7 +500,7 @@ export function useDeleteAssocieGerant() {
 // ── SALARIES ─────────────────────────────────────────────────────────────────────────────
 
 export function useSalaries() {
-  const { actor, isFetching } = useActor();
+  const { actor, isFetching } = useActor(createActor);
   return useQuery<Salarie[]>({
     queryKey: ["salaries"],
     queryFn: async () => {
@@ -517,7 +518,7 @@ export function useSalaries() {
 }
 
 export function useCreateSalarie() {
-  const { actor } = useActor();
+  const { actor } = useActor(createActor);
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (v: Omit<Salarie, "id">) => {
@@ -530,7 +531,7 @@ export function useCreateSalarie() {
 }
 
 export function useUpdateSalarie() {
-  const { actor } = useActor();
+  const { actor } = useActor(createActor);
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (v: Salarie) => {
@@ -543,7 +544,7 @@ export function useUpdateSalarie() {
 }
 
 export function useDeleteSalarie() {
-  const { actor } = useActor();
+  const { actor } = useActor(createActor);
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (id: string) => {
@@ -558,7 +559,7 @@ export function useDeleteSalarie() {
 // ── PARAMETRES JURIDIQUES ───────────────────────────────────────────────────────────────────
 
 export function useParametresJuridiques() {
-  const { actor, isFetching } = useActor();
+  const { actor, isFetching } = useActor(createActor);
   return useQuery<ParametresJuridiques>({
     queryKey: ["parametresJuridiques"],
     queryFn: async () => {
@@ -578,7 +579,7 @@ export function useParametresJuridiques() {
 }
 
 export function useSaveParametresJuridiques() {
-  const { actor } = useActor();
+  const { actor } = useActor(createActor);
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (p: ParametresJuridiques) => {
@@ -594,7 +595,7 @@ export function useSaveParametresJuridiques() {
 // ── AMORTISSEMENTS ──────────────────────────────────────────────────────────────────────────
 
 export function useAmortissements() {
-  const { actor, isFetching } = useActor();
+  const { actor, isFetching } = useActor(createActor);
   return useQuery<LigneAmortissement[]>({
     queryKey: ["amortissements"],
     queryFn: async () => {
@@ -612,7 +613,7 @@ export function useAmortissements() {
 }
 
 export function useCreateAmortissement() {
-  const { actor } = useActor();
+  const { actor } = useActor(createActor);
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (v: Omit<LigneAmortissement, "id">) => {
@@ -625,7 +626,7 @@ export function useCreateAmortissement() {
 }
 
 export function useUpdateAmortissement() {
-  const { actor } = useActor();
+  const { actor } = useActor(createActor);
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (v: LigneAmortissement) => {
@@ -643,7 +644,7 @@ export function useUpdateAmortissement() {
 }
 
 export function useDeleteAmortissement() {
-  const { actor } = useActor();
+  const { actor } = useActor(createActor);
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (id: string) => {
@@ -658,7 +659,7 @@ export function useDeleteAmortissement() {
 // ── JOURS OUVERTURE PAR SEMAINE ──────────────────────────────────────────────
 
 export function useJoursOuvertureParSemaine() {
-  const { actor, isFetching } = useActor();
+  const { actor, isFetching } = useActor(createActor);
   return useQuery<number>({
     queryKey: ["joursOuverture"],
     queryFn: async () => {
@@ -671,7 +672,7 @@ export function useJoursOuvertureParSemaine() {
 }
 
 export function useSaveJoursOuvertureParSemaine() {
-  const { actor } = useActor();
+  const { actor } = useActor(createActor);
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (v: number) => {
@@ -685,7 +686,7 @@ export function useSaveJoursOuvertureParSemaine() {
 // ── MIX PRODUIT PAR CATEGORIE ────────────────────────────────────────────────
 
 export function useMixProduitParCategorie() {
-  const { actor, isFetching } = useActor();
+  const { actor, isFetching } = useActor(createActor);
   return useQuery<[string, number][]>({
     queryKey: ["mixProduit"],
     queryFn: async () => {
@@ -698,7 +699,7 @@ export function useMixProduitParCategorie() {
 }
 
 export function useSaveMixProduitParCategorie() {
-  const { actor } = useActor();
+  const { actor } = useActor(createActor);
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (m: [string, number][]) => {

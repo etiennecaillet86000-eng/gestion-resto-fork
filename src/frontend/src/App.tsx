@@ -9,32 +9,21 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Toaster } from "@/components/ui/sonner";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import Emprunts from "@/pages/Emprunts";
-import FraisFixes from "@/pages/FraisFixes";
-import Ingredients from "@/pages/Ingredients";
-import Marges from "@/pages/Marges";
-import ParametresJuridiques from "@/pages/ParametresJuridiques";
-import Recettes from "@/pages/Recettes";
-import Rentabilite from "@/pages/Rentabilite";
-import SalairesCotisations from "@/pages/SalairesCotisations";
-import Stock from "@/pages/Stock";
-import VentesDuJour from "@/pages/VentesDuJour";
-import {
-  BarChart3,
-  BookOpen,
-  ChefHat,
-  Landmark,
-  LogOut,
-  Package,
-  Receipt,
-  Settings2,
-  ShoppingBasket,
-  ShoppingCart,
-  TrendingUp,
-  Users,
-} from "lucide-react";
-import { useState } from "react";
+import { Layout } from "@/core/ui/Layout";
+import Amortissements from "@/modules/finance/Amortissements";
+import Emprunts from "@/modules/finance/Emprunts";
+import FraisFixes from "@/modules/finance/FraisFixes";
+import Marges from "@/modules/finance/Marges";
+import Rentabilite from "@/modules/finance/Rentabilite";
+import AssociesGerants from "@/modules/hr/AssociesGerants";
+import SalairesCotisations from "@/modules/hr/SalairesCotisations";
+import Ingredients from "@/modules/restaurant/Ingredients";
+import Recettes from "@/modules/restaurant/Recettes";
+import Stock from "@/modules/restaurant/Stock";
+import VentesDuJour from "@/modules/restaurant/VentesDuJour";
+import ParametresJuridiques from "@/modules/settings/ParametresJuridiques";
+import { ChefHat } from "lucide-react";
+import { useEffect, useState } from "react";
 
 const CREDS = { user: "admin", pass: "admin123" };
 
@@ -64,7 +53,7 @@ function LoginPage({ onLogin }: { onLogin: () => void }) {
             Gestion Resto
           </h1>
           <p className="text-sidebar-foreground/60 text-sm mt-1">
-            Restauration & Hôtellerie
+            Restauration &amp; Hôtellerie
           </p>
         </div>
         <Card className="shadow-xl">
@@ -124,57 +113,64 @@ function LoginPage({ onLogin }: { onLogin: () => void }) {
           </a>
         </p>
       </div>
+      <Toaster />
     </div>
   );
 }
 
-const TABS = [
-  {
-    id: "parametres",
-    label: "Paramètres",
-    icon: Settings2,
-    component: ParametresJuridiques,
-  },
-  {
-    id: "ingredients",
-    label: "Ingrédients",
-    icon: ShoppingBasket,
-    component: Ingredients,
-  },
-  { id: "recettes", label: "Recettes", icon: BookOpen, component: Recettes },
-  { id: "frais", label: "Frais Fixes", icon: Receipt, component: FraisFixes },
-  {
-    id: "emprunts",
-    label: "Investissements & Emprunts",
-    icon: Landmark,
-    component: Emprunts,
-  },
-  {
-    id: "salaires",
-    label: "Salaires",
-    icon: Users,
-    component: SalairesCotisations,
-  },
-  {
-    id: "rentabilite",
-    label: "Rentabilité",
-    icon: TrendingUp,
-    component: Rentabilite,
-  },
-  { id: "stock", label: "Stock", icon: Package, component: Stock },
-  {
-    id: "ventes",
-    label: "Ventes du jour",
-    icon: ShoppingCart,
-    component: VentesDuJour,
-  },
-  {
-    id: "marges",
-    label: "Prévisionnel Économique",
-    icon: BarChart3,
-    component: Marges,
-  },
-];
+type Route =
+  | "/"
+  | "/recettes"
+  | "/stock"
+  | "/ventes"
+  | "/salaries"
+  | "/associes"
+  | "/frais-fixes"
+  | "/emprunts"
+  | "/amortissements"
+  | "/rentabilite"
+  | "/marges"
+  | "/parametres";
+
+const ROUTES: Record<Route, React.ComponentType> = {
+  "/": Ingredients,
+  "/recettes": Recettes,
+  "/stock": Stock,
+  "/ventes": VentesDuJour,
+  "/salaries": SalairesCotisations,
+  "/associes": AssociesGerants,
+  "/frais-fixes": FraisFixes,
+  "/emprunts": Emprunts,
+  "/amortissements": Amortissements,
+  "/rentabilite": Rentabilite,
+  "/marges": Marges,
+  "/parametres": ParametresJuridiques,
+};
+
+function getRouteFromHash(): Route {
+  const hash = window.location.hash.replace("#", "") || "/";
+  return (Object.keys(ROUTES).includes(hash) ? hash : "/") as Route;
+}
+
+function AppContent({ onLogout }: { onLogout: () => void }) {
+  const [route, setRoute] = useState<Route>(getRouteFromHash);
+
+  useEffect(() => {
+    function onHashChange() {
+      setRoute(getRouteFromHash());
+    }
+    window.addEventListener("hashchange", onHashChange);
+    return () => window.removeEventListener("hashchange", onHashChange);
+  }, []);
+
+  const PageComponent = ROUTES[route];
+
+  return (
+    <Layout onLogout={onLogout} currentRoute={route}>
+      <PageComponent />
+    </Layout>
+  );
+}
 
 export default function App() {
   const [authed, setAuthed] = useState(
@@ -187,91 +183,8 @@ export default function App() {
   }
 
   if (!authed) {
-    return (
-      <>
-        <LoginPage onLogin={() => setAuthed(true)} />
-        <Toaster />
-      </>
-    );
+    return <LoginPage onLogin={() => setAuthed(true)} />;
   }
 
-  return (
-    <div className="min-h-screen flex flex-col bg-background">
-      {/* Header */}
-      <header className="bg-sidebar text-sidebar-foreground sticky top-0 z-50 shadow-md no-print">
-        <div className="container max-w-7xl mx-auto px-4 h-14 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center shrink-0">
-              <ChefHat className="h-4 w-4 text-primary-foreground" />
-            </div>
-            <div className="leading-tight">
-              <span className="font-display font-bold text-base">
-                Gestion Resto
-              </span>
-              <span className="hidden sm:block text-xs text-sidebar-foreground/60">
-                Restauration & Hôtellerie
-              </span>
-            </div>
-          </div>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={logout}
-            className="text-sidebar-foreground/70 hover:text-sidebar-foreground hover:bg-sidebar-accent"
-            data-ocid="nav.button"
-          >
-            <LogOut className="h-4 w-4 mr-2" /> Déconnexion
-          </Button>
-        </div>
-      </header>
-
-      {/* Main */}
-      <main className="flex-1 container max-w-7xl mx-auto px-4 py-6">
-        <Tabs defaultValue="parametres">
-          <TabsList
-            className="h-auto flex-wrap gap-1 bg-card border shadow-xs mb-6 p-1 rounded-lg"
-            data-ocid="nav.tab"
-          >
-            {TABS.map((t) => (
-              <TabsTrigger
-                key={t.id}
-                value={t.id}
-                className="flex items-center gap-1.5 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded"
-                data-ocid={`nav.${t.id}.tab`}
-              >
-                <t.icon className="h-4 w-4" />
-                <span className="hidden sm:inline">{t.label}</span>
-                <span className="sm:hidden text-xs">
-                  {t.label.split(" ")[0]}
-                </span>
-              </TabsTrigger>
-            ))}
-          </TabsList>
-
-          {TABS.map((t) => (
-            <TabsContent key={t.id} value={t.id}>
-              <t.component />
-            </TabsContent>
-          ))}
-        </Tabs>
-      </main>
-
-      {/* Footer */}
-      <footer className="border-t py-4 mt-auto no-print">
-        <p className="text-center text-xs text-muted-foreground">
-          © {new Date().getFullYear()}. Built with ❤️ using{" "}
-          <a
-            href={`https://caffeine.ai?utm_source=caffeine-footer&utm_medium=referral&utm_content=${encodeURIComponent(window.location.hostname)}`}
-            target="_blank"
-            rel="noreferrer"
-            className="underline hover:text-primary"
-          >
-            caffeine.ai
-          </a>
-        </p>
-      </footer>
-
-      <Toaster />
-    </div>
-  );
+  return <AppContent onLogout={logout} />;
 }
