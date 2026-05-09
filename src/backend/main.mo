@@ -1,4 +1,6 @@
 
+
+
 actor {
 
   public type RecetteIngredient = {
@@ -14,6 +16,7 @@ actor {
     prixUnitaireHT: Float;
     seuilSecurite: Float;
     stockInitial: Float;
+    famille: ?Text;
   };
 
   public type Recette = {
@@ -152,6 +155,18 @@ actor {
     regimeSocial = "TNS";
   };
   var amortissements: [LigneAmortissement] = [];
+  var familles: [Text] = [
+    "Viandes & volailles",
+    "Poissons & fruits de mer",
+    "Fruits & légumes",
+    "Produits laitiers",
+    "Épicerie sèche",
+    "Boissons",
+    "Surgelés",
+    "Condiments & sauces",
+    "Pains & viennoiseries",
+    "Autre",
+  ];
   var nextId: Nat = 1;
 
   func genId() : Text {
@@ -164,16 +179,16 @@ actor {
 
   public query func getIngredients() : async [Ingredient] { ingredients };
 
-  public func createIngredient(nom: Text, unite: Text, prixUnitaireHT: Float, seuilSecurite: Float, stockInitial: Float) : async Ingredient {
-    let ing: Ingredient = { id = genId(); nom; unite; prixUnitaireHT; seuilSecurite; stockInitial };
+  public func createIngredient(nom: Text, unite: Text, prixUnitaireHT: Float, seuilSecurite: Float, stockInitial: Float, famille: ?Text) : async Ingredient {
+    let ing: Ingredient = { id = genId(); nom; unite; prixUnitaireHT; seuilSecurite; stockInitial; famille };
     ingredients := ingredients.concat([ing]);
     ing
   };
 
-  public func updateIngredient(id: Text, nom: Text, unite: Text, prixUnitaireHT: Float, seuilSecurite: Float, stockInitial: Float) : async Bool {
+  public func updateIngredient(id: Text, nom: Text, unite: Text, prixUnitaireHT: Float, seuilSecurite: Float, stockInitial: Float, famille: ?Text) : async Bool {
     var found = false;
     ingredients := ingredients.map(func(i) {
-      if (i.id == id) { found := true; { id; nom; unite; prixUnitaireHT; seuilSecurite; stockInitial } }
+      if (i.id == id) { found := true; { id; nom; unite; prixUnitaireHT; seuilSecurite; stockInitial; famille } }
       else { i }
     });
     found
@@ -183,6 +198,15 @@ actor {
     let before = ingredients.size();
     ingredients := ingredients.filter(func i = i.id != id);
     ingredients.size() < before
+  };
+
+  // FAMILLES D'INGREDIENTS
+
+  public query func getFamilles() : async [Text] { familles };
+
+  public func setFamilles(f: [Text]) : async Bool {
+    familles := f;
+    true
   };
 
   // RECETTES

@@ -77,6 +77,7 @@ export function useCreateIngredient() {
         v.prixUnitaireHT,
         v.seuilSecurite,
         v.stockInitial,
+        v.famille ?? null,
       );
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["ingredients"] }),
@@ -97,6 +98,7 @@ export function useUpdateIngredient() {
         v.prixUnitaireHT,
         v.seuilSecurite,
         v.stockInitial,
+        v.famille ?? null,
       );
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["ingredients"] }),
@@ -695,6 +697,38 @@ export function useMixProduitParCategorie() {
       return result;
     },
     enabled: !!actor && !isFetching,
+  });
+}
+
+// ── FAMILLES D'INGRÉDIENTS ──────────────────────────────────────────────────
+
+/**
+ * Fetches the shared list of ingredient families from the backend.
+ * Falls back to an empty array — callers should seed with INGREDIENT_FAMILIES
+ * when the backend returns nothing.
+ */
+export function useFamilles() {
+  const { actor, isFetching } = useActor(createActor);
+  return useQuery<string[]>({
+    queryKey: ["familles"],
+    queryFn: async () => {
+      if (!actor) return [];
+      const result = await typed(actor).getFamilles();
+      return result;
+    },
+    enabled: !!actor && !isFetching,
+  });
+}
+
+export function useSetFamilles() {
+  const { actor } = useActor(createActor);
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (familles: string[]) => {
+      const a = requireActor(actor);
+      return typed(a).setFamilles(familles);
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["familles"] }),
   });
 }
 

@@ -11,14 +11,20 @@ import { Label } from "@/components/ui/label";
 import { Toaster } from "@/components/ui/sonner";
 import { Layout } from "@/core/ui/Layout";
 import Amortissements from "@/modules/finance/Amortissements";
+import BusinessPlan from "@/modules/finance/BusinessPlan";
+import BusinessPlanReel from "@/modules/finance/BusinessPlanReel";
+import Comptabilite from "@/modules/finance/Comptabilite";
 import Emprunts from "@/modules/finance/Emprunts";
 import FraisFixes from "@/modules/finance/FraisFixes";
 import Marges from "@/modules/finance/Marges";
+import Projections from "@/modules/finance/Projections";
 import Rentabilite from "@/modules/finance/Rentabilite";
 import AssociesGerants from "@/modules/hr/AssociesGerants";
 import SalairesCotisations from "@/modules/hr/SalairesCotisations";
 import Ingredients from "@/modules/restaurant/Ingredients";
+import Operations from "@/modules/restaurant/Operations";
 import Recettes from "@/modules/restaurant/Recettes";
+import SimulateurCarte from "@/modules/restaurant/SimulateurCarte";
 import Stock from "@/modules/restaurant/Stock";
 import VentesDuJour from "@/modules/restaurant/VentesDuJour";
 import ParametresJuridiques from "@/modules/settings/ParametresJuridiques";
@@ -120,30 +126,46 @@ function LoginPage({ onLogin }: { onLogin: () => void }) {
 
 type Route =
   | "/"
+  | "/ingredients"
+  | "/operations"
   | "/recettes"
+  | "/simulateur"
   | "/stock"
   | "/ventes"
+  | "/ventes-du-jour"
   | "/salaries"
   | "/associes"
   | "/frais-fixes"
   | "/emprunts"
   | "/amortissements"
+  | "/business-plan"
+  | "/business-plan-reel"
+  | "/comptabilite"
   | "/rentabilite"
   | "/marges"
+  | "/projections"
   | "/parametres";
 
 const ROUTES: Record<Route, React.ComponentType> = {
   "/": Ingredients,
+  "/ingredients": Ingredients,
+  "/operations": Operations,
   "/recettes": Recettes,
+  "/simulateur": SimulateurCarte,
   "/stock": Stock,
   "/ventes": VentesDuJour,
+  "/ventes-du-jour": VentesDuJour,
   "/salaries": SalairesCotisations,
   "/associes": AssociesGerants,
   "/frais-fixes": FraisFixes,
   "/emprunts": Emprunts,
   "/amortissements": Amortissements,
+  "/business-plan": BusinessPlan,
+  "/business-plan-reel": BusinessPlanReel,
+  "/comptabilite": Comptabilite,
   "/rentabilite": Rentabilite,
   "/marges": Marges,
+  "/projections": Projections,
   "/parametres": ParametresJuridiques,
 };
 

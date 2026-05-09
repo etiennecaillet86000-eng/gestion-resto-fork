@@ -130,6 +130,7 @@ export interface Ingredient {
     nom: string;
     seuilSecurite: number;
     stockInitial: number;
+    famille?: string;
     unite: string;
     prixUnitaireHT: number;
 }
@@ -173,7 +174,7 @@ export interface backendInterface {
     createAmortissement(nom: string, coutTotal: number, dureeMois: bigint): Promise<LigneAmortissement>;
     createAssocieGerant(nom: string, statut: string, remunerationAnnuelle: number): Promise<AssocieGerant>;
     createEmprunt(nom: string, montant: number, tauxAnnuel: number, dureeMois: bigint, dateDebut: string, differeMois: bigint): Promise<Emprunt>;
-    createIngredient(nom: string, unite: string, prixUnitaireHT: number, seuilSecurite: number, stockInitial: number): Promise<Ingredient>;
+    createIngredient(nom: string, unite: string, prixUnitaireHT: number, seuilSecurite: number, stockInitial: number, famille: string | null): Promise<Ingredient>;
     createMouvement(ingredientId: string, date: string, typeOp: string, quantite: number, motif: string): Promise<MouvementStock>;
     createRecette(nom: string, categorie: string, categorieTVA: string, tauxTVA: number, ings: Array<RecetteIngredient>, consommablesHT: number, prixVenteTTC: number): Promise<Recette>;
     createSalarie(nom: string, poste: string, salaireAnnuelBrut: number): Promise<Salarie>;
@@ -189,6 +190,7 @@ export interface backendInterface {
     getAmortissements(): Promise<Array<LigneAmortissement>>;
     getAssociesGerants(): Promise<Array<AssocieGerant>>;
     getEmprunts(): Promise<Array<Emprunt>>;
+    getFamilles(): Promise<Array<string>>;
     getFraisFixes(): Promise<Array<LigneFraisFixes>>;
     getIngredients(): Promise<Array<Ingredient>>;
     getJoursOuvertureParSemaine(): Promise<number>;
@@ -204,13 +206,15 @@ export interface backendInterface {
     saveMixProduitParCategorie(m: Array<[string, number]>): Promise<boolean>;
     saveParametres(p: ParametresRentabilite): Promise<boolean>;
     saveParametresJuridiques(p: ParametresJuridiques): Promise<boolean>;
+    setFamilles(f: Array<string>): Promise<boolean>;
     updateAmortissement(id: string, nom: string, coutTotal: number, dureeMois: bigint): Promise<boolean>;
     updateAssocieGerant(id: string, nom: string, statut: string, remunerationAnnuelle: number): Promise<boolean>;
     updateEmprunt(id: string, nom: string, montant: number, tauxAnnuel: number, dureeMois: bigint, dateDebut: string, differeMois: bigint): Promise<boolean>;
-    updateIngredient(id: string, nom: string, unite: string, prixUnitaireHT: number, seuilSecurite: number, stockInitial: number): Promise<boolean>;
+    updateIngredient(id: string, nom: string, unite: string, prixUnitaireHT: number, seuilSecurite: number, stockInitial: number, famille: string | null): Promise<boolean>;
     updateRecette(id: string, nom: string, categorie: string, categorieTVA: string, tauxTVA: number, ings: Array<RecetteIngredient>, consommablesHT: number, prixVenteTTC: number): Promise<boolean>;
     updateSalarie(id: string, nom: string, poste: string, salaireAnnuelBrut: number): Promise<boolean>;
 }
+import type { Ingredient as _Ingredient } from "./declarations/backend.did.d.ts";
 export class Backend implements backendInterface {
     constructor(private actor: ActorSubclass<_SERVICE>, private _uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, private _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, private processError?: (error: unknown) => never){}
     async createAmortissement(arg0: string, arg1: number, arg2: bigint): Promise<LigneAmortissement> {
@@ -255,18 +259,18 @@ export class Backend implements backendInterface {
             return result;
         }
     }
-    async createIngredient(arg0: string, arg1: string, arg2: number, arg3: number, arg4: number): Promise<Ingredient> {
+    async createIngredient(arg0: string, arg1: string, arg2: number, arg3: number, arg4: number, arg5: string | null): Promise<Ingredient> {
         if (this.processError) {
             try {
-                const result = await this.actor.createIngredient(arg0, arg1, arg2, arg3, arg4);
-                return result;
+                const result = await this.actor.createIngredient(arg0, arg1, arg2, arg3, arg4, to_candid_opt_n1(this._uploadFile, this._downloadFile, arg5));
+                return from_candid_Ingredient_n2(this._uploadFile, this._downloadFile, result);
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
-            const result = await this.actor.createIngredient(arg0, arg1, arg2, arg3, arg4);
-            return result;
+            const result = await this.actor.createIngredient(arg0, arg1, arg2, arg3, arg4, to_candid_opt_n1(this._uploadFile, this._downloadFile, arg5));
+            return from_candid_Ingredient_n2(this._uploadFile, this._downloadFile, result);
         }
     }
     async createMouvement(arg0: string, arg1: string, arg2: string, arg3: number, arg4: string): Promise<MouvementStock> {
@@ -479,6 +483,20 @@ export class Backend implements backendInterface {
             return result;
         }
     }
+    async getFamilles(): Promise<Array<string>> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.getFamilles();
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.getFamilles();
+            return result;
+        }
+    }
     async getFraisFixes(): Promise<Array<LigneFraisFixes>> {
         if (this.processError) {
             try {
@@ -497,14 +515,14 @@ export class Backend implements backendInterface {
         if (this.processError) {
             try {
                 const result = await this.actor.getIngredients();
-                return result;
+                return from_candid_vec_n5(this._uploadFile, this._downloadFile, result);
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
             const result = await this.actor.getIngredients();
-            return result;
+            return from_candid_vec_n5(this._uploadFile, this._downloadFile, result);
         }
     }
     async getJoursOuvertureParSemaine(): Promise<number> {
@@ -689,6 +707,20 @@ export class Backend implements backendInterface {
             return result;
         }
     }
+    async setFamilles(arg0: Array<string>): Promise<boolean> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.setFamilles(arg0);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.setFamilles(arg0);
+            return result;
+        }
+    }
     async updateAmortissement(arg0: string, arg1: string, arg2: number, arg3: bigint): Promise<boolean> {
         if (this.processError) {
             try {
@@ -731,17 +763,17 @@ export class Backend implements backendInterface {
             return result;
         }
     }
-    async updateIngredient(arg0: string, arg1: string, arg2: string, arg3: number, arg4: number, arg5: number): Promise<boolean> {
+    async updateIngredient(arg0: string, arg1: string, arg2: string, arg3: number, arg4: number, arg5: number, arg6: string | null): Promise<boolean> {
         if (this.processError) {
             try {
-                const result = await this.actor.updateIngredient(arg0, arg1, arg2, arg3, arg4, arg5);
+                const result = await this.actor.updateIngredient(arg0, arg1, arg2, arg3, arg4, arg5, to_candid_opt_n1(this._uploadFile, this._downloadFile, arg6));
                 return result;
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
-            const result = await this.actor.updateIngredient(arg0, arg1, arg2, arg3, arg4, arg5);
+            const result = await this.actor.updateIngredient(arg0, arg1, arg2, arg3, arg4, arg5, to_candid_opt_n1(this._uploadFile, this._downloadFile, arg6));
             return result;
         }
     }
@@ -773,6 +805,45 @@ export class Backend implements backendInterface {
             return result;
         }
     }
+}
+function from_candid_Ingredient_n2(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _Ingredient): Ingredient {
+    return from_candid_record_n3(_uploadFile, _downloadFile, value);
+}
+function from_candid_opt_n4(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [] | [string]): string | null {
+    return value.length === 0 ? null : value[0];
+}
+function from_candid_record_n3(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
+    id: string;
+    nom: string;
+    seuilSecurite: number;
+    stockInitial: number;
+    famille: [] | [string];
+    unite: string;
+    prixUnitaireHT: number;
+}): {
+    id: string;
+    nom: string;
+    seuilSecurite: number;
+    stockInitial: number;
+    famille?: string;
+    unite: string;
+    prixUnitaireHT: number;
+} {
+    return {
+        id: value.id,
+        nom: value.nom,
+        seuilSecurite: value.seuilSecurite,
+        stockInitial: value.stockInitial,
+        famille: record_opt_to_undefined(from_candid_opt_n4(_uploadFile, _downloadFile, value.famille)),
+        unite: value.unite,
+        prixUnitaireHT: value.prixUnitaireHT
+    };
+}
+function from_candid_vec_n5(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: Array<_Ingredient>): Array<Ingredient> {
+    return value.map((x)=>from_candid_Ingredient_n2(_uploadFile, _downloadFile, x));
+}
+function to_candid_opt_n1(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: string | null): [] | [string] {
+    return value === null ? candid_none() : candid_some(value);
 }
 export interface CreateActorOptions {
     agent?: Agent;

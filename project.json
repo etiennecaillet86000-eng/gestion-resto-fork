@@ -1,24 +1,19 @@
 {
-  "overview": "A full-stack restaurant ERP on the Internet Computer — managing ingredients, recipes, staff, loans, stock, daily sales, fixed costs, and profitability with a modular sidebar-based interface and real-time data sync via React Query.",
+  "overview": "Gestion Resto Fork is a comprehensive restaurant management SaaS application covering operations, kitchen logistics, HR, and finance. It features 17+ pages with real-time data synchronization, scenario-based financial projections, and detailed P&L reporting.",
   "features": [
-    "Ingredient & recipe management with cost calculations",
-    "Stock movements and inventory tracking",
-    "Employee & associate management (salaries, cotisations)",
-    "Loan management with amortization schedules",
-    "Daily sales tracking and profitability analytics",
-    "Fixed costs and business plan modules",
-    "Sidebar navigation organized by module (Restaurant, RH, Finance)",
-    "Full ICP backend with React Query sync"
+    "Simulateur Carte / Laboratoire with dual performance + margin classification filters",
+    "Projections Financières: merged Projections + Rentabilité + Business Plan with 1/12/60-month horizons",
+    "Ventes & Opérations with daily/weekly/monthly/annual sub-tabs",
+    "Expanded Comptabilité with visual P&L and Capacité d'Autofinancement (annual + monthly)",
+    "Restaurant, RH, Finance, and Paramètres modules with React Query data sync"
   ],
-  "category": "business-erp",
+  "category": "productivity",
   "tags": [
     "restaurant",
-    "erp",
-    "react-query",
-    "icp",
-    "management",
-    "french",
-    "saas"
+    "saas",
+    "finance",
+    "projections",
+    "management"
   ],
-  "last_updated": "2026-05-05T14:16:27.826Z"
+  "last_updated": "2026-05-05T20:48:47.774Z"
 }

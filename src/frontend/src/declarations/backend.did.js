@@ -34,6 +34,7 @@ export const Ingredient = IDL.Record({
   'nom' : IDL.Text,
   'seuilSecurite' : IDL.Float64,
   'stockInitial' : IDL.Float64,
+  'famille' : IDL.Opt(IDL.Text),
   'unite' : IDL.Text,
   'prixUnitaireHT' : IDL.Float64,
 });
@@ -106,7 +107,14 @@ export const idlService = IDL.Service({
       [],
     ),
   'createIngredient' : IDL.Func(
-      [IDL.Text, IDL.Text, IDL.Float64, IDL.Float64, IDL.Float64],
+      [
+        IDL.Text,
+        IDL.Text,
+        IDL.Float64,
+        IDL.Float64,
+        IDL.Float64,
+        IDL.Opt(IDL.Text),
+      ],
       [Ingredient],
       [],
     ),
@@ -145,6 +153,7 @@ export const idlService = IDL.Service({
   'getAmortissements' : IDL.Func([], [IDL.Vec(LigneAmortissement)], ['query']),
   'getAssociesGerants' : IDL.Func([], [IDL.Vec(AssocieGerant)], ['query']),
   'getEmprunts' : IDL.Func([], [IDL.Vec(Emprunt)], ['query']),
+  'getFamilles' : IDL.Func([], [IDL.Vec(IDL.Text)], ['query']),
   'getFraisFixes' : IDL.Func([], [IDL.Vec(LigneFraisFixes)], ['query']),
   'getIngredients' : IDL.Func([], [IDL.Vec(Ingredient)], ['query']),
   'getJoursOuvertureParSemaine' : IDL.Func([], [IDL.Float64], ['query']),
@@ -168,6 +177,7 @@ export const idlService = IDL.Service({
     ),
   'saveParametres' : IDL.Func([ParametresRentabilite], [IDL.Bool], []),
   'saveParametresJuridiques' : IDL.Func([ParametresJuridiques], [IDL.Bool], []),
+  'setFamilles' : IDL.Func([IDL.Vec(IDL.Text)], [IDL.Bool], []),
   'updateAmortissement' : IDL.Func(
       [IDL.Text, IDL.Text, IDL.Float64, IDL.Nat],
       [IDL.Bool],
@@ -192,7 +202,15 @@ export const idlService = IDL.Service({
       [],
     ),
   'updateIngredient' : IDL.Func(
-      [IDL.Text, IDL.Text, IDL.Text, IDL.Float64, IDL.Float64, IDL.Float64],
+      [
+        IDL.Text,
+        IDL.Text,
+        IDL.Text,
+        IDL.Float64,
+        IDL.Float64,
+        IDL.Float64,
+        IDL.Opt(IDL.Text),
+      ],
       [IDL.Bool],
       [],
     ),
@@ -246,6 +264,7 @@ export const idlFactory = ({ IDL }) => {
     'nom' : IDL.Text,
     'seuilSecurite' : IDL.Float64,
     'stockInitial' : IDL.Float64,
+    'famille' : IDL.Opt(IDL.Text),
     'unite' : IDL.Text,
     'prixUnitaireHT' : IDL.Float64,
   });
@@ -318,7 +337,14 @@ export const idlFactory = ({ IDL }) => {
         [],
       ),
     'createIngredient' : IDL.Func(
-        [IDL.Text, IDL.Text, IDL.Float64, IDL.Float64, IDL.Float64],
+        [
+          IDL.Text,
+          IDL.Text,
+          IDL.Float64,
+          IDL.Float64,
+          IDL.Float64,
+          IDL.Opt(IDL.Text),
+        ],
         [Ingredient],
         [],
       ),
@@ -365,6 +391,7 @@ export const idlFactory = ({ IDL }) => {
       ),
     'getAssociesGerants' : IDL.Func([], [IDL.Vec(AssocieGerant)], ['query']),
     'getEmprunts' : IDL.Func([], [IDL.Vec(Emprunt)], ['query']),
+    'getFamilles' : IDL.Func([], [IDL.Vec(IDL.Text)], ['query']),
     'getFraisFixes' : IDL.Func([], [IDL.Vec(LigneFraisFixes)], ['query']),
     'getIngredients' : IDL.Func([], [IDL.Vec(Ingredient)], ['query']),
     'getJoursOuvertureParSemaine' : IDL.Func([], [IDL.Float64], ['query']),
@@ -392,6 +419,7 @@ export const idlFactory = ({ IDL }) => {
         [IDL.Bool],
         [],
       ),
+    'setFamilles' : IDL.Func([IDL.Vec(IDL.Text)], [IDL.Bool], []),
     'updateAmortissement' : IDL.Func(
         [IDL.Text, IDL.Text, IDL.Float64, IDL.Nat],
         [IDL.Bool],
@@ -416,7 +444,15 @@ export const idlFactory = ({ IDL }) => {
         [],
       ),
     'updateIngredient' : IDL.Func(
-        [IDL.Text, IDL.Text, IDL.Text, IDL.Float64, IDL.Float64, IDL.Float64],
+        [
+          IDL.Text,
+          IDL.Text,
+          IDL.Text,
+          IDL.Float64,
+          IDL.Float64,
+          IDL.Float64,
+          IDL.Opt(IDL.Text),
+        ],
         [IDL.Bool],
         [],
       ),

@@ -48,6 +48,7 @@ export interface Ingredient {
     nom: string;
     seuilSecurite: number;
     stockInitial: number;
+    famille?: string;
     unite: string;
     prixUnitaireHT: number;
 }
@@ -91,7 +92,7 @@ export interface backendInterface {
     createAmortissement(nom: string, coutTotal: number, dureeMois: bigint): Promise<LigneAmortissement>;
     createAssocieGerant(nom: string, statut: string, remunerationAnnuelle: number): Promise<AssocieGerant>;
     createEmprunt(nom: string, montant: number, tauxAnnuel: number, dureeMois: bigint, dateDebut: string, differeMois: bigint): Promise<Emprunt>;
-    createIngredient(nom: string, unite: string, prixUnitaireHT: number, seuilSecurite: number, stockInitial: number): Promise<Ingredient>;
+    createIngredient(nom: string, unite: string, prixUnitaireHT: number, seuilSecurite: number, stockInitial: number, famille: string | null): Promise<Ingredient>;
     createMouvement(ingredientId: string, date: string, typeOp: string, quantite: number, motif: string): Promise<MouvementStock>;
     createRecette(nom: string, categorie: string, categorieTVA: string, tauxTVA: number, ings: Array<RecetteIngredient>, consommablesHT: number, prixVenteTTC: number): Promise<Recette>;
     createSalarie(nom: string, poste: string, salaireAnnuelBrut: number): Promise<Salarie>;
@@ -107,6 +108,7 @@ export interface backendInterface {
     getAmortissements(): Promise<Array<LigneAmortissement>>;
     getAssociesGerants(): Promise<Array<AssocieGerant>>;
     getEmprunts(): Promise<Array<Emprunt>>;
+    getFamilles(): Promise<Array<string>>;
     getFraisFixes(): Promise<Array<LigneFraisFixes>>;
     getIngredients(): Promise<Array<Ingredient>>;
     getJoursOuvertureParSemaine(): Promise<number>;
@@ -122,10 +124,11 @@ export interface backendInterface {
     saveMixProduitParCategorie(m: Array<[string, number]>): Promise<boolean>;
     saveParametres(p: ParametresRentabilite): Promise<boolean>;
     saveParametresJuridiques(p: ParametresJuridiques): Promise<boolean>;
+    setFamilles(f: Array<string>): Promise<boolean>;
     updateAmortissement(id: string, nom: string, coutTotal: number, dureeMois: bigint): Promise<boolean>;
     updateAssocieGerant(id: string, nom: string, statut: string, remunerationAnnuelle: number): Promise<boolean>;
     updateEmprunt(id: string, nom: string, montant: number, tauxAnnuel: number, dureeMois: bigint, dateDebut: string, differeMois: bigint): Promise<boolean>;
-    updateIngredient(id: string, nom: string, unite: string, prixUnitaireHT: number, seuilSecurite: number, stockInitial: number): Promise<boolean>;
+    updateIngredient(id: string, nom: string, unite: string, prixUnitaireHT: number, seuilSecurite: number, stockInitial: number, famille: string | null): Promise<boolean>;
     updateRecette(id: string, nom: string, categorie: string, categorieTVA: string, tauxTVA: number, ings: Array<RecetteIngredient>, consommablesHT: number, prixVenteTTC: number): Promise<boolean>;
     updateSalarie(id: string, nom: string, poste: string, salaireAnnuelBrut: number): Promise<boolean>;
 }

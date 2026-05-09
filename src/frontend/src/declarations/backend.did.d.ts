@@ -30,6 +30,7 @@ export interface Ingredient {
   'nom' : string,
   'seuilSecurite' : number,
   'stockInitial' : number,
+  'famille' : [] | [string],
   'unite' : string,
   'prixUnitaireHT' : number,
 }
@@ -101,7 +102,7 @@ export interface _SERVICE {
     Emprunt
   >,
   'createIngredient' : ActorMethod<
-    [string, string, number, number, number],
+    [string, string, number, number, number, [] | [string]],
     Ingredient
   >,
   'createMouvement' : ActorMethod<
@@ -125,6 +126,7 @@ export interface _SERVICE {
   'getAmortissements' : ActorMethod<[], Array<LigneAmortissement>>,
   'getAssociesGerants' : ActorMethod<[], Array<AssocieGerant>>,
   'getEmprunts' : ActorMethod<[], Array<Emprunt>>,
+  'getFamilles' : ActorMethod<[], Array<string>>,
   'getFraisFixes' : ActorMethod<[], Array<LigneFraisFixes>>,
   'getIngredients' : ActorMethod<[], Array<Ingredient>>,
   'getJoursOuvertureParSemaine' : ActorMethod<[], number>,
@@ -143,6 +145,7 @@ export interface _SERVICE {
   >,
   'saveParametres' : ActorMethod<[ParametresRentabilite], boolean>,
   'saveParametresJuridiques' : ActorMethod<[ParametresJuridiques], boolean>,
+  'setFamilles' : ActorMethod<[Array<string>], boolean>,
   'updateAmortissement' : ActorMethod<
     [string, string, number, bigint],
     boolean
@@ -156,7 +159,7 @@ export interface _SERVICE {
     boolean
   >,
   'updateIngredient' : ActorMethod<
-    [string, string, string, number, number, number],
+    [string, string, string, number, number, number, [] | [string]],
     boolean
   >,
   'updateRecette' : ActorMethod<

@@ -19,7 +19,12 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { calcMensualite } from "@/core/utils/finance";
+import {
+  calcMensualite,
+  capitalRestantApresNMois,
+  coutTotalEmprunt,
+  totalInterets,
+} from "@/core/utils/finance";
 import {
   type Emprunt,
   useCreateEmprunt,
@@ -28,11 +33,27 @@ import {
   useUpdateEmprunt,
 } from "@/hooks/useQueries";
 import { fmtEur } from "@/utils/format";
-import { Landmark, Pencil, Plus, Trash2 } from "lucide-react";
-import { useState } from "react";
+import {
+  ChevronDown,
+  ChevronRight,
+  Landmark,
+  Pencil,
+  Plus,
+  Trash2,
+  TrendingDown,
+} from "lucide-react";
+import { useMemo, useState } from "react";
 import { toast } from "sonner";
 
-const SKELETON_ROWS = [0, 1, 2];
+// ── Types ───────────────────────────────────────────────────────────────────
+interface LignTableau {
+  mois: number;
+  capitalDebut: number;
+  mensualite: number;
+  interets: number;
+  capitalRembourse: number;
+  capitalFin: number;
+}
 
 interface EmpruntForm {
   nom: string;
@@ -63,6 +84,40 @@ function formFromEmprunt(e: Emprunt): EmpruntForm {
   };
 }
 
+// ── Local amortization table calculation ───────────────────────────────────────
+
+function buildTableau(emprunt: Emprunt): LignTableau[] {
+  const dureeMois = Number(emprunt.dureeMois);
+  const mensualite = calcMensualite(
+    emprunt.montant,
+    emprunt.tauxAnnuel,
+    dureeMois,
+  );
+  const tauxMensuel = emprunt.tauxAnnuel / 100 / 12;
+  const lignes: LignTableau[] = [];
+  let capital = emprunt.montant;
+
+  for (let i = 0; i < dureeMois; i++) {
+    const interets = capital * tauxMensuel;
+    const capitalRembourse = mensualite - interets;
+    const capitalFin = Math.max(0, capital - capitalRembourse);
+    lignes.push({
+      mois: i + 1,
+      capitalDebut: capital,
+      mensualite,
+      interets,
+      capitalRembourse,
+      capitalFin,
+    });
+    capital = capitalFin;
+  }
+  return lignes;
+}
+
+const SKELETON_ROWS = [0, 1, 2];
+
+// ── Component ─────────────────────────────────────────────────────────────────
+
 export default function Emprunts() {
   const { data: emprunts = [], isLoading } = useEmprunts();
   const createMut = useCreateEmprunt();
@@ -72,12 +127,29 @@ export default function Emprunts() {
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<Emprunt | null>(null);
   const [form, setForm] = useState<EmpruntForm>(emptyForm());
+  const [expandedId, setExpandedId] = useState<string | null>(null);
 
   const mensualitePreview = calcMensualite(
     Number.parseFloat(form.montantStr) || 0,
     Number.parseFloat(form.tauxStr) || 0,
     Number.parseInt(form.dureeStr) || 0,
   );
+
+  // KPI aggregates
+  const kpis = useMemo(() => {
+    const totalMensuel = emprunts.reduce(
+      (s, e) =>
+        s + calcMensualite(e.montant, e.tauxAnnuel, Number(e.dureeMois)),
+      0,
+    );
+    const totalCapital = emprunts.reduce((s, e) => s + e.montant, 0);
+    const totalInteretsCumul = emprunts.reduce(
+      (s, e) => s + totalInterets(e),
+      0,
+    );
+    const totalCout = emprunts.reduce((s, e) => s + coutTotalEmprunt(e), 0);
+    return { totalMensuel, totalCapital, totalInteretsCumul, totalCout };
+  }, [emprunts]);
 
   function openAdd() {
     setEditing(null);
@@ -136,20 +208,14 @@ export default function Emprunts() {
     }
   }
 
-  const totalMensuel = emprunts.reduce(
-    (sum, e) =>
-      sum + calcMensualite(e.montant, e.tauxAnnuel, Number(e.dureeMois)),
-    0,
-  );
-
   const isPending = createMut.isPending || updateMut.isPending;
-
   const set =
     (k: keyof EmpruntForm) => (ev: React.ChangeEvent<HTMLInputElement>) =>
       setForm((f) => ({ ...f, [k]: ev.target.value }));
 
   return (
     <div className="space-y-6">
+      {/* Header */}
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-lg font-semibold">Emprunts</h2>
@@ -162,6 +228,47 @@ export default function Emprunts() {
         </Button>
       </div>
 
+      {/* KPI cards */}
+      {emprunts.length > 0 && (
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+          <Card className="bg-card border">
+            <CardContent className="p-4">
+              <p className="text-xs text-muted-foreground mb-1">
+                Total mensualités
+              </p>
+              <p className="text-xl font-bold text-primary">
+                {fmtEur(kpis.totalMensuel)}
+              </p>
+            </CardContent>
+          </Card>
+          <Card className="bg-card border">
+            <CardContent className="p-4">
+              <p className="text-xs text-muted-foreground mb-1">
+                Capital total
+              </p>
+              <p className="text-xl font-bold">{fmtEur(kpis.totalCapital)}</p>
+            </CardContent>
+          </Card>
+          <Card className="bg-card border">
+            <CardContent className="p-4">
+              <p className="text-xs text-muted-foreground mb-1">
+                Intérêts cumulés
+              </p>
+              <p className="text-xl font-bold text-destructive">
+                {fmtEur(kpis.totalInteretsCumul)}
+              </p>
+            </CardContent>
+          </Card>
+          <Card className="bg-card border">
+            <CardContent className="p-4">
+              <p className="text-xs text-muted-foreground mb-1">Coût total</p>
+              <p className="text-xl font-bold">{fmtEur(kpis.totalCout)}</p>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {/* Table */}
       {isLoading ? (
         <div className="space-y-2">
           {SKELETON_ROWS.map((i) => (
@@ -174,15 +281,19 @@ export default function Emprunts() {
           data-ocid="emprunts.empty_state"
         >
           <Landmark className="h-10 w-10 mx-auto mb-3 opacity-30" />
-          <p>Aucun emprunt enregistré.</p>
+          <p className="font-medium mb-1">Aucun emprunt enregistré</p>
+          <p className="text-xs">
+            Ajoutez vos prêts bancaires pour suivre vos mensualités.
+          </p>
         </div>
       ) : (
         <Card className="overflow-hidden">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-semibold flex items-center gap-3">
+              <TrendingDown className="h-4 w-4 text-muted-foreground" />
               Tableau des emprunts
               <Badge variant="secondary">
-                Total mensualités : {fmtEur(totalMensuel)}
+                {emprunts.length} emprunt{emprunts.length > 1 ? "s" : ""}
               </Badge>
             </CardTitle>
           </CardHeader>
@@ -191,12 +302,16 @@ export default function Emprunts() {
               <Table>
                 <TableHeader>
                   <TableRow className="bg-muted/40">
+                    <TableHead className="w-8" />
                     <TableHead className="min-w-[160px]">Nom</TableHead>
                     <TableHead className="text-right">Montant</TableHead>
                     <TableHead className="text-right">Taux annuel</TableHead>
-                    <TableHead className="text-right">Durée (mois)</TableHead>
+                    <TableHead className="text-right">Durée</TableHead>
                     <TableHead>Date début</TableHead>
                     <TableHead className="text-right">Mensualité</TableHead>
+                    <TableHead className="text-right">
+                      Intérêts totaux
+                    </TableHead>
                     <TableHead className="w-20" />
                   </TableRow>
                 </TableHeader>
@@ -207,48 +322,134 @@ export default function Emprunts() {
                       e.tauxAnnuel,
                       Number(e.dureeMois),
                     );
+                    const interetsTotaux = totalInterets(e);
+                    const isExpanded = expandedId === e.id;
+                    const tableau = isExpanded ? buildTableau(e) : [];
+
                     return (
-                      <TableRow
-                        key={e.id}
-                        data-ocid={`emprunts.item.${idx + 1}`}
-                      >
-                        <TableCell className="font-medium">{e.nom}</TableCell>
-                        <TableCell className="text-right">
-                          {fmtEur(e.montant)}
-                        </TableCell>
-                        <TableCell className="text-right">
-                          {e.tauxAnnuel} %
-                        </TableCell>
-                        <TableCell className="text-right">
-                          {Number(e.dureeMois)} mois
-                        </TableCell>
-                        <TableCell className="text-sm">{e.dateDebut}</TableCell>
-                        <TableCell className="text-right font-semibold text-primary">
-                          {fmtEur(mensualite)}
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex gap-1 justify-end">
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-7 w-7"
-                              onClick={() => openEdit(e)}
-                              data-ocid={`emprunts.edit_button.${idx + 1}`}
-                            >
-                              <Pencil className="h-3.5 w-3.5" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-7 w-7 text-destructive hover:text-destructive"
-                              onClick={() => handleDelete(e.id)}
-                              data-ocid={`emprunts.delete_button.${idx + 1}`}
-                            >
-                              <Trash2 className="h-3.5 w-3.5" />
-                            </Button>
-                          </div>
-                        </TableCell>
-                      </TableRow>
+                      <>
+                        <TableRow
+                          key={e.id}
+                          data-ocid={`emprunts.item.${idx + 1}`}
+                          className="cursor-pointer hover:bg-muted/20"
+                          onClick={() =>
+                            setExpandedId(isExpanded ? null : e.id)
+                          }
+                        >
+                          <TableCell className="w-8 text-muted-foreground">
+                            {isExpanded ? (
+                              <ChevronDown className="h-3.5 w-3.5" />
+                            ) : (
+                              <ChevronRight className="h-3.5 w-3.5" />
+                            )}
+                          </TableCell>
+                          <TableCell className="font-medium">{e.nom}</TableCell>
+                          <TableCell className="text-right">
+                            {fmtEur(e.montant)}
+                          </TableCell>
+                          <TableCell className="text-right">
+                            {e.tauxAnnuel} %
+                          </TableCell>
+                          <TableCell className="text-right">
+                            {Number(e.dureeMois)} mois
+                          </TableCell>
+                          <TableCell className="text-sm">
+                            {e.dateDebut}
+                          </TableCell>
+                          <TableCell className="text-right font-semibold text-primary">
+                            {fmtEur(mensualite)}
+                          </TableCell>
+                          <TableCell className="text-right text-destructive text-sm">
+                            {fmtEur(interetsTotaux)}
+                          </TableCell>
+                          <TableCell onClick={(ev) => ev.stopPropagation()}>
+                            <div className="flex gap-1 justify-end">
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-7 w-7"
+                                onClick={() => openEdit(e)}
+                                data-ocid={`emprunts.edit_button.${idx + 1}`}
+                              >
+                                <Pencil className="h-3.5 w-3.5" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-7 w-7 text-destructive hover:text-destructive"
+                                onClick={() => handleDelete(e.id)}
+                                data-ocid={`emprunts.delete_button.${idx + 1}`}
+                              >
+                                <Trash2 className="h-3.5 w-3.5" />
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+
+                        {/* Expandable amortization table */}
+                        {isExpanded && (
+                          <TableRow
+                            key={`${e.id}-expanded`}
+                            className="bg-muted/10"
+                          >
+                            <TableCell colSpan={9} className="p-0">
+                              <div className="overflow-x-auto border-t border-border/50">
+                                <Table>
+                                  <TableHeader>
+                                    <TableRow className="bg-muted/20 text-xs">
+                                      <TableHead className="py-2">
+                                        Mois
+                                      </TableHead>
+                                      <TableHead className="text-right py-2">
+                                        Capital début
+                                      </TableHead>
+                                      <TableHead className="text-right py-2">
+                                        Mensualité
+                                      </TableHead>
+                                      <TableHead className="text-right py-2">
+                                        Intérêts
+                                      </TableHead>
+                                      <TableHead className="text-right py-2">
+                                        Capital remboursé
+                                      </TableHead>
+                                      <TableHead className="text-right py-2">
+                                        Capital fin
+                                      </TableHead>
+                                    </TableRow>
+                                  </TableHeader>
+                                  <TableBody>
+                                    {tableau.map((l) => (
+                                      <TableRow
+                                        key={l.mois}
+                                        className="text-xs hover:bg-transparent"
+                                      >
+                                        <TableCell className="py-1.5 font-medium">
+                                          {l.mois}
+                                        </TableCell>
+                                        <TableCell className="text-right py-1.5">
+                                          {fmtEur(l.capitalDebut)}
+                                        </TableCell>
+                                        <TableCell className="text-right py-1.5 text-primary">
+                                          {fmtEur(l.mensualite)}
+                                        </TableCell>
+                                        <TableCell className="text-right py-1.5 text-destructive">
+                                          {fmtEur(l.interets)}
+                                        </TableCell>
+                                        <TableCell className="text-right py-1.5">
+                                          {fmtEur(l.capitalRembourse)}
+                                        </TableCell>
+                                        <TableCell className="text-right py-1.5">
+                                          {fmtEur(l.capitalFin)}
+                                        </TableCell>
+                                      </TableRow>
+                                    ))}
+                                  </TableBody>
+                                </Table>
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        )}
+                      </>
                     );
                   })}
                 </TableBody>
@@ -258,6 +459,7 @@ export default function Emprunts() {
         </Card>
       )}
 
+      {/* Add / Edit dialog */}
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent data-ocid="emprunts.dialog">
           <DialogHeader>
@@ -329,9 +531,15 @@ export default function Emprunts() {
               />
             </div>
             {form.montantStr && form.dureeStr && (
-              <div className="rounded-md bg-primary/10 border border-primary/20 px-4 py-2">
+              <div className="rounded-md bg-primary/10 border border-primary/20 px-4 py-2 space-y-1">
                 <p className="text-sm font-medium text-primary">
                   Mensualité estimée : {fmtEur(mensualitePreview)}
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  Coût total :{" "}
+                  {fmtEur(
+                    mensualitePreview * (Number.parseInt(form.dureeStr) || 0),
+                  )}
                 </p>
               </div>
             )}

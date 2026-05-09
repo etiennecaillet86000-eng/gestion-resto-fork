@@ -13,6 +13,7 @@ type Emprunt__913501935 =
   };
 type Ingredient__830977812 =
   {
+    famille : ?Text;
     id : Text;
     nom : Text;
     prixUnitaireHT : Float;
@@ -67,6 +68,7 @@ actor {
   stable var amortissements : [LigneAmortissement__245076235];
   stable var associesGerants : [AssocieGerant__144128390];
   stable var emprunts : [Emprunt__913501935];
+  stable var familles : [Text];
   stable var fraisFixes : [LigneFraisFixes__42477358];
   stable var ingredients : [Ingredient__830977812];
   stable var joursOuvertureParSemaineSV : Float;

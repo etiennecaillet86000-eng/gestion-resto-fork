@@ -1,17 +1,58 @@
 import type { Ingredient, Recette, RecetteIngredient } from "../types";
 
+// ── Unit conversion ───────────────────────────────────────────────────────────
+
+/**
+ * Returns a factor to convert a recipe ingredient unit to the base ingredient unit.
+ *
+ * Ingredient.prixUnitaireHT is always expressed per the ingredient's own unite:
+ *   - If ingredient.unite = 'Kg', price is per kg → recipe qty in 'g' must be ÷ 1000
+ *   - If ingredient.unite = 'L',  price is per l  → recipe qty in 'ml' must be ÷ 1000
+ *                                                  → recipe qty in 'cl' must be ÷ 100
+ *
+ * Matching is case-insensitive.
+ */
+export function convertUnitFactor(
+  recipeUnite: string,
+  baseUnite: string,
+): number {
+  const r = recipeUnite.toLowerCase().trim();
+  const b = baseUnite.toLowerCase().trim();
+
+  // Same unit — no conversion needed
+  if (r === b) return 1;
+
+  // Weight conversions
+  if ((b === "kg" || b === "kilo" || b === "kilos") && r === "g")
+    return 1 / 1000;
+
+  // Volume conversions (base is litres)
+  if (b === "l" || b === "litre" || b === "litres") {
+    if (r === "ml" || r === "millilitre" || r === "millilitres")
+      return 1 / 1000;
+    if (r === "cl" || r === "centilitre" || r === "centilitres") return 1 / 100;
+  }
+
+  // All other unit pairs: treat as compatible (factor = 1)
+  return 1;
+}
+
 // ── Cost calculations ─────────────────────────────────────────────────────────
 
 /**
- * Calculates the total material cost HT for a recipe
+ * Calculates the total material cost HT for a recipe.
+ * Automatically converts recipe ingredient units to the base ingredient unit
+ * before applying the price (e.g. g→Kg, ml→L, cl→L).
  */
 export function coutMatiereHT(
   recette: { ingredients: RecetteIngredient[]; consommablesHT: number },
-  ingredientsMap: Map<string, Pick<Ingredient, "prixUnitaireHT">>,
+  ingredientsMap: Map<string, Pick<Ingredient, "prixUnitaireHT" | "unite">>,
 ): number {
   const total = recette.ingredients.reduce((sum, ri) => {
     const ing = ingredientsMap.get(ri.ingredientId);
-    return sum + (ing ? ri.quantite * ing.prixUnitaireHT : 0);
+    if (!ing) return sum;
+    const factor = convertUnitFactor(ri.unite, ing.unite);
+    return sum + ri.quantite * factor * ing.prixUnitaireHT;
   }, 0);
   return total + recette.consommablesHT;
 }
